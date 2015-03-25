@@ -72,6 +72,24 @@ func (connector *RRDConnector) GetName() string {
 	return connector.name
 }
 
+func (connector *RRDConnector) logInfo(format string, a ...interface{}) {
+	logger.Log(
+		logger.LevelInfo,
+		"connector",
+		fmt.Sprintf("rrd[%s]: ", connector.GetName())+format,
+		a...,
+	)
+}
+
+func (connector *RRDConnector) logWarning(format string, a ...interface{}) {
+	logger.Log(
+		logger.LevelWarning,
+		"connector",
+		fmt.Sprintf("rrd[%s]: ", connector.GetName())+format,
+		a...,
+	)
+}
+
 // GetPlots retrieves time series data from origin based on a query and a time interval.
 func (connector *RRDConnector) GetPlots(query *plot.Query) ([]plot.Series, error) {
 	var (
@@ -171,7 +189,7 @@ func (connector *RRDConnector) Refresh(originName string, outputChan chan<- *cat
 
 		// Report errors
 		if err != nil {
-			logger.Log(logger.LevelWarning, "connector", "rrd[%s]: error while walking: %s", connector.name, err)
+			connector.logWarning("error while walking: %s", err)
 			return nil
 		}
 
@@ -183,13 +201,7 @@ func (connector *RRDConnector) Refresh(originName string, outputChan chan<- *cat
 
 		seriesMatch, err := matchSeriesPattern(connector.re, filePath[len(connector.path)+1:])
 		if err != nil {
-			logger.Log(
-				logger.LevelInfo,
-				"connector",
-				"rrd[%s]: file `%s' does not match pattern, ignoring",
-				connector.name,
-				filePath,
-			)
+			connector.logInfo("file `%s' does not match pattern, ignoring", filePath)
 			return nil
 		}
 
@@ -202,7 +214,7 @@ func (connector *RRDConnector) Refresh(originName string, outputChan chan<- *cat
 		// Extract metric information from .rrd file
 		info, err := rrd.Info(filePath)
 		if err != nil {
-			logger.Log(logger.LevelWarning, "connector", "rrd[%s]: %s", connector.name, err)
+			connector.logWarning("error reading info from RRD file `%s': %s", filePath, err)
 			return nil
 		}
 

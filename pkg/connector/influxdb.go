@@ -94,6 +94,15 @@ func (connector *InfluxDBConnector) GetName() string {
 	return connector.name
 }
 
+func (connector *InfluxDBConnector) logInfo(format string, a ...interface{}) {
+	logger.Log(
+		logger.LevelInfo,
+		"connector",
+		fmt.Sprintf("influxdb[%s]: ", connector.GetName())+format,
+		a...,
+	)
+}
+
 // GetPlots retrieves time series data from provider based on a query and a time interval.
 func (connector *InfluxDBConnector) GetPlots(query *plot.Query) ([]plot.Series, error) {
 	seriesLength := len(query.Series)
@@ -178,12 +187,7 @@ func (connector *InfluxDBConnector) Refresh(originName string, outputChan chan<-
 
 		seriesPoints := series.GetPoints()
 		if len(seriesPoints) == 0 {
-			logger.Log(logger.LevelInfo,
-				"connector",
-				"influxdb[%s]: series `%s' does not return sample data, ignoring",
-				connector.name,
-				seriesName,
-			)
+			connector.logInfo("series `%s' does not return sample data, ignoring", seriesName)
 			continue
 		}
 
@@ -196,12 +200,7 @@ func (connector *InfluxDBConnector) Refresh(originName string, outputChan chan<-
 
 			seriesMatch, err := matchSeriesPattern(connector.re, seriesName+"."+columnName)
 			if err != nil {
-				logger.Log(logger.LevelInfo,
-					"connector",
-					"influxdb[%s]: series `%s' does not match pattern, ignoring",
-					connector.name,
-					seriesName,
-				)
+				connector.logInfo("series `%s' does not match pattern, ignoring", seriesName)
 				continue
 			}
 

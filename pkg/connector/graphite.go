@@ -90,6 +90,15 @@ func (connector *GraphiteConnector) GetName() string {
 	return connector.name
 }
 
+func (connector *GraphiteConnector) logInfo(format string, a ...interface{}) {
+	logger.Log(
+		logger.LevelInfo,
+		"connector",
+		fmt.Sprintf("graphite[%s]: ", connector.GetName())+format,
+		a...,
+	)
+}
+
 // GetPlots retrieves time series data from provider based on a query and a time interval.
 func (connector *GraphiteConnector) GetPlots(query *plot.Query) ([]plot.Series, error) {
 	var (
@@ -214,13 +223,7 @@ func (connector *GraphiteConnector) Refresh(originName string, outputChan chan<-
 
 		seriesMatch, err := matchSeriesPattern(connector.re, series)
 		if err != nil {
-			logger.Log(
-				logger.LevelInfo,
-				"connector",
-				"graphite[%s]: file `%s' does not match pattern, ignoring",
-				connector.name,
-				series,
-			)
+			connector.logInfo("file `%s' does not match pattern, ignoring", series)
 			continue
 		}
 

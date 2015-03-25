@@ -134,7 +134,7 @@ func init() {
 			return nil, err
 		}
 
-		connector.aggregators = compileAggregatorPatterns(aggregators, connector.name)
+		connector.aggregators = compileAggregatorPatterns(aggregators, connector)
 
 		if connector.insecureTLS, err = config.GetBool(settings, "allow_insecure_tls", false); err != nil {
 			return nil, err
@@ -171,7 +171,7 @@ func init() {
 			return nil, fmt.Errorf("kairosdb[%s]: unable to get KairosDB version: %s", connector.name, err)
 		}
 
-		logger.Log(logger.LevelDebug, "connector", "kairosdb[%s]: `%s' found", connector.name, version)
+		connector.logDebug("KairosDB backend version: %s", version)
 
 		if version_array[0] != 0 && version_array[1] != 9 && (version_array[2] != 4 || version_array[2] != 5) {
 			return nil, fmt.Errorf("kairosdb[%s]: KairosDB versions 0.9.4/5 supported only", connector.name)
@@ -184,6 +184,33 @@ func init() {
 // GetName returns the name of the current connector.
 func (connector *KairosdbConnector) GetName() string {
 	return connector.name
+}
+
+func (connector *KairosdbConnector) logDebug(format string, a ...interface{}) {
+	logger.Log(
+		logger.LevelDebug,
+		"connector",
+		fmt.Sprintf("kairosdb[%s]: ", connector.GetName())+format,
+		a...,
+	)
+}
+
+func (connector *KairosdbConnector) logInfo(format string, a ...interface{}) {
+	logger.Log(
+		logger.LevelInfo,
+		"connector",
+		fmt.Sprintf("kairosdb[%s]: ", connector.GetName())+format,
+		a...,
+	)
+}
+
+func (connector *KairosdbConnector) logWarning(format string, a ...interface{}) {
+	logger.Log(
+		logger.LevelWarning,
+		"connector",
+		fmt.Sprintf("kairosdb[%s]: ", connector.GetName())+format,
+		a...,
+	)
 }
 
 // GetPlots retrieves time series data from provider based on a query and a time interval.
@@ -212,9 +239,11 @@ func (connector *KairosdbConnector) GetPlots(query *plot.Query) ([]plot.Series, 
 
 	httpClient := http.Client{Transport: httpTransport}
 
-	logger.Log(logger.LevelDebug, "connector", "kairosdb[%s]: API Call to %s: %s", connector.name,
+	connector.logDebug(
+		"API Call to %s: %s",
 		strings.TrimSuffix(connector.URL, "/")+kairosdbURLQueryMetric,
-		string(JSONquery))
+		string(JSONquery),
+	)
 
 	request, err := http.NewRequest(
 		"POST",
@@ -335,11 +364,8 @@ func (connector *KairosdbConnector) Refresh(originName string, outputChan chan<-
 		return fmt.Errorf("kairosdb[%s]: unable to marshal JSON data: %s", connector.name, err)
 	}
 
-	logger.Log(
-		logger.LevelDebug,
-		"connector",
-		"kairosdb[%s]: API Call to %s: %s",
-		connector.name,
+	connector.logDebug(
+		"API Call to %s: %s",
 		strings.TrimSuffix(connector.URL, "/")+kairosdbURLMetricsTags,
 		string(jsonData),
 	)
@@ -373,9 +399,8 @@ func (connector *KairosdbConnector) Refresh(originName string, outputChan chan<-
 		return fmt.Errorf("kairosdb[%s]: unable to read HTTP response body: %s", connector.name, err)
 	}
 
-	logger.Log(
-		logger.LevelDebug,
-		"connector", "kairosdb[%s]: API Response from %s: %s", connector.name,
+	connector.logDebug(
+		"API Response from %s: %s",
 		strings.TrimSuffix(connector.URL, "/")+kairosdbURLMetricsTags,
 		string(data),
 	)
@@ -419,14 +444,7 @@ func (connector *KairosdbConnector) Refresh(originName string, outputChan chan<-
 
 				if aggregator != nil {
 					a, _ := json.Marshal(aggregator)
-					logger.Log(
-						logger.LevelInfo,
-						"connector",
-						"kairosdb[%s]: `%s' applied to `%s'",
-						connector.name,
-						string(a),
-						metricName,
-					)
+					connector.logDebug("aggregator `%s' applied to `%s'", string(a), metricName)
 				}
 
 				break
@@ -606,7 +624,7 @@ func matchAggregatorPattern(aggregators []metricAggregator, metric string) inter
 	return nil
 }
 
-func compileAggregatorPatterns(aggregators interface{}, connector string) []metricAggregator {
+func compileAggregatorPatterns(aggregators interface{}, connector *KairosdbConnector) []metricAggregator {
 	var (
 		re  *regexp.Regexp
 		err error
@@ -623,8 +641,7 @@ func compileAggregatorPatterns(aggregators interface{}, connector string) []metr
 		aggregator := a.(map[string]interface{})
 
 		if re, err = regexp.Compile(aggregator["metric"].(string)); err != nil {
-			logger.Log(logger.LevelWarning, "connector", "kairosdb[%s]: can't compile `%s', skipping",
-				connector, aggregator["metric"].(string))
+			connector.logWarning("can't compile `%s', skipping", aggregator["metric"].(string))
 			continue
 		}
 
