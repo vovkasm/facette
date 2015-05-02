@@ -94,6 +94,7 @@ func routeTrimPrefix(path, prefix string) string {
 	return strings.Trim(strings.TrimPrefix(path, prefix), "/")
 }
 
+// TODO: this function hardcodes non-cacheable responses: caching duration should be specified as parameter instead
 func setHTTPCacheHeaders(writer http.ResponseWriter) {
 	date := time.Now().UTC().Format(http.TimeFormat)
 

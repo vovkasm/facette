@@ -36,6 +36,7 @@ type Server struct {
 	providerWorkers worker.Pool
 	catalogWorker   *worker.Worker
 	serveWorker     *worker.Worker
+	mgmtWorker      *worker.Worker
 	configPath      string
 	logPath         string
 	logLevel        int
@@ -49,13 +50,16 @@ type Server struct {
 func NewServer(configPath, logPath string, logLevel int) *Server {
 	return &Server{
 		Config: &config.Config{
-			BindAddr:     config.DefaultBindAddr,
-			BaseDir:      config.DefaultBaseDir,
-			DataDir:      config.DefaultDataDir,
-			ProvidersDir: config.DefaultProvidersDir,
-			PidFile:      config.DefaultPidFile,
-			SocketUser:   config.DefaultSocketUser,
-			SocketGroup:  config.DefaultSocketGroup,
+			BindAddr:        config.DefaultBindAddr,
+			BaseDir:         config.DefaultBaseDir,
+			DataDir:         config.DefaultDataDir,
+			MgmtBindAddr:    config.DefaultMgmtBindAddr,
+			MgmtSocketUser:  config.DefaultMgmtSocketUser,
+			MgmtSocketGroup: config.DefaultMgmtSocketGroup,
+			ProvidersDir:    config.DefaultProvidersDir,
+			PidFile:         config.DefaultPidFile,
+			SocketUser:      config.DefaultSocketUser,
+			SocketGroup:     config.DefaultSocketGroup,
 		},
 		configPath: configPath,
 		logPath:    logPath,
@@ -166,6 +170,18 @@ func (server *Server) Run() error {
 	server.Library = library.NewLibrary(server.Config, server.Catalog)
 	go server.Library.Refresh()
 
+	// Instanciate management worker
+	server.mgmtWorker = worker.NewWorker()
+	server.mgmtWorker.RegisterEvent(eventInit, workerManageInit)
+	server.mgmtWorker.RegisterEvent(eventShutdown, workerManageShutdown)
+	server.mgmtWorker.RegisterEvent(eventRun, workerManageRun)
+
+	if err := server.mgmtWorker.SendEvent(eventInit, false, server); err != nil {
+		return err
+	} else if err := server.mgmtWorker.SendEvent(eventRun, true, nil); err != nil {
+		return err
+	}
+
 	// Instanciate serve worker
 	server.serveWorker = worker.NewWorker()
 	server.serveWorker.RegisterEvent(eventInit, workerServeInit)
@@ -192,6 +208,11 @@ func (server *Server) Stop() {
 	logger.Log(logger.LevelNotice, "server", "shutting down server")
 
 	server.stopping = true
+
+	// Shutdown management worker
+	if err := server.mgmtWorker.SendEvent(eventShutdown, false, nil); err != nil {
+		logger.Log(logger.LevelWarning, "server", "management worker did not shut down successfully: %s", err)
+	}
 
 	// Shutdown serve worker
 	if err := server.serveWorker.SendEvent(eventShutdown, false, nil); err != nil {

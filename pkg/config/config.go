@@ -18,6 +18,12 @@ const (
 	DefaultSocketUser int = -1
 	// DefaultSocketGroup indicates that the socket owning group should not be changed
 	DefaultSocketGroup int = -1
+	// DefaultMgmtBindAddr represents the default management interface binding address.
+	DefaultMgmtBindAddr string = "tcp://localhost:12004"
+	// DefaultMgmtSocketUser indicates that the management socket owning user should not be changed
+	DefaultMgmtSocketUser int = -1
+	// DefaultMgmtSocketGroup indicates that the management socket owning group should not be changed
+	DefaultMgmtSocketGroup int = -1
 	// DefaultBaseDir represents the default server base directory location.
 	DefaultBaseDir string = "/usr/share/facette"
 	// DefaultDataDir represents the default internal data files directory location.
@@ -36,6 +42,10 @@ type Config struct {
 	SocketUser       int                        `json:"socket_user,string"`
 	SocketGroup      int                        `json:"socket_group,string"`
 	SocketMode       *string                    `json:"socket_mode"`
+	MgmtBindAddr     string                     `json:"mgmt_bind"`
+	MgmtSocketUser   int                        `json:"mgmt_socket_user,string"`
+	MgmtSocketGroup  int                        `json:"mgmt_socket_group,string"`
+	MgmtSocketMode   *string                    `json:"mgmt_socket_mode"`
 	BaseDir          string                     `json:"base_dir"`
 	DataDir          string                     `json:"data_dir"`
 	ProvidersDir     string                     `json:"providers_dir"`
