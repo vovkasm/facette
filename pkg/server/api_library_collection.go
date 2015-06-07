@@ -76,8 +76,8 @@ func (server *Server) serveCollection(writer http.ResponseWriter, request *http.
 			},
 		}
 
+		// Inheritance requested: clone an existing collection
 		if request.Method == "POST" && request.FormValue("inherit") != "" {
-			// Get collection from library
 			item, err := server.Library.GetItem(request.FormValue("inherit"), library.LibraryItemCollection)
 			if os.IsNotExist(err) {
 				server.serveResponse(writer, serverResponse{mesgResourceNotFound}, http.StatusNotFound)
@@ -193,7 +193,23 @@ func (server *Server) serveCollectionList(writer http.ResponseWriter, request *h
 	// Fill collections list
 	items = make(CollectionListResponse, 0)
 
+	// Flag for listing only collection templates
+	listType := request.FormValue("type")
+	if listType == "" {
+		listType = "all"
+	} else if listType != "raw" && listType != "template" && listType != "all" {
+		logger.Log(logger.LevelWarning, "server", "unknown list type: %s", listType)
+		server.serveResponse(writer, serverResponse{mesgRequestInvalid}, http.StatusBadRequest)
+		return
+	}
+
 	for _, collection := range server.Library.Collections {
+		// Depending on the `type' flag, filter out either collections or collections templates
+		if request.FormValue("type") != "all" && (collection.Template && listType == "raw" ||
+			!collection.Template && listType == "template") {
+			continue
+		}
+
 		if request.FormValue("parent") == "null" && collection.Parent != nil || request.FormValue("parent") != "" &&
 			request.FormValue("parent") != "null" && (collection.Parent == nil ||
 			collection.Parent.ID != request.FormValue("parent")) {
@@ -208,6 +224,23 @@ func (server *Server) serveCollectionList(writer http.ResponseWriter, request *h
 		// Skip excluded items
 		if excludeSet.Has(collection.ID) {
 			continue
+		}
+
+		// If linked collection, expand the templated description field
+		if collection.Link != "" {
+			item, err := server.Library.GetItem(collection.Link, library.LibraryItemCollection)
+
+			if err != nil {
+				logger.Log(logger.LevelError, "server", "collection template not found")
+			} else {
+				collectionTemplate := item.(*library.Collection)
+
+				if collection.Description, err = expandStringTemplate(
+					collectionTemplate.Description,
+					collection.Attributes); err != nil {
+					logger.Log(logger.LevelError, "server", "failed to expand collection description: %s", err)
+				}
+			}
 		}
 
 		collectionItem := &CollectionResponse{

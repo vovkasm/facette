@@ -9,11 +9,19 @@ import (
 // Collection represents a collection of graphs.
 type Collection struct {
 	Item
-	Entries  []*CollectionEntry     `json:"entries"`
+	Template bool `json:"template"`
+
+	// For plain/template collections definitions
+	Title    string                 `json:"title,omitempty"`
+	Entries  []*CollectionEntry     `json:"entries,omitempty"`
 	Parent   *Collection            `json:"-"`
-	ParentID string                 `json:"parent"`
-	Options  map[string]interface{} `json:"options"`
+	ParentID string                 `json:"parent,omitempty"`
+	Options  map[string]interface{} `json:"options,omitempty"`
 	Children []*Collection          `json:"-"`
+
+	// For linked collections
+	Link       string                 `json:"link,omitempty"`
+	Attributes map[string]interface{} `json:"attributes,omitempty"`
 }
 
 // IndexOfChild returns the index of a child in the children list of `-1' if not found.
@@ -29,8 +37,9 @@ func (collection *Collection) IndexOfChild(id string) int {
 
 // CollectionEntry represents a collection entry.
 type CollectionEntry struct {
-	ID      string                 `json:"id"`
-	Options map[string]interface{} `json:"options"`
+	ID         string                 `json:"id"`
+	Options    map[string]interface{} `json:"options,omitempty"`
+	Attributes map[string]interface{} `json:"options,omitempty"`
 }
 
 // PrepareCollection applies options defaults and fallback values, then filters entries by graphs titles and state.
@@ -57,6 +66,7 @@ func (library *Library) PrepareCollection(collection *Collection, filter string)
 
 		// Check for linked graph
 		if graph.Link != "" {
+			// Required for the UI to be able to route graph edition in the correct mode (plain or template)
 			entry.Options["linked"] = true
 		}
 

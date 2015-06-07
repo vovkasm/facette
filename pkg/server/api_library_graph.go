@@ -174,7 +174,7 @@ func (server *Server) serveGraphList(writer http.ResponseWriter, request *http.R
 	}
 
 	for _, graph := range server.Library.Graphs {
-		// Depending on the template flag, filter out either graphs or graph templates
+		// Depending on the `type' flag, filter out either graphs or graph templates
 		if request.FormValue("type") != "all" && (graph.Template && listType == "raw" ||
 			!graph.Template && listType == "template") {
 			continue
