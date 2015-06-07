@@ -1573,7 +1573,7 @@ func Test_LibraryCollectionHandle(test *testing.T) {
 	}
 
 	if !reflect.DeepEqual(collectionBase.Collection, collectionResult) {
-		test.Logf("\nExpected %#v\nbut got  %#v", collectionBase.Collection, collectionResult)
+		test.Logf("\nExpected %s\nbut got  %s", collectionBase.Collection, collectionResult)
 		test.Fail()
 	}
 
@@ -1625,7 +1625,7 @@ func Test_LibraryCollectionHandle(test *testing.T) {
 	}
 
 	if !reflect.DeepEqual(collectionBase.Collection, collectionResult) {
-		test.Logf("\nExpected %#v\nbut got  %#v", collectionBase, collectionResult)
+		test.Logf("\nExpected %s\nbut got  %s", collectionBase, collectionResult)
 		test.Fail()
 	}
 

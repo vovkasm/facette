@@ -1,6 +1,7 @@
 package library
 
 import (
+	"fmt"
 	"strings"
 
 	"github.com/facette/facette/pkg/config"
@@ -24,6 +25,36 @@ type Collection struct {
 	Attributes map[string]interface{} `json:"attributes,omitempty"`
 }
 
+func (c *Collection) String() string {
+	return fmt.Sprintf(
+		"Collection{Name:%q Title:%q Template:%t Link:%q Entries:[%s] "+
+			"Options:%v Attributes:%v Children:[%s] Parent:%q}",
+		c.Name,
+		c.Title,
+		c.Template,
+		c.Link,
+		func(entries []*CollectionEntry) string {
+			entriesStrings := make([]string, len(entries))
+			for i, entry := range entries {
+				entriesStrings[i] = fmt.Sprintf("%s", entry)
+			}
+
+			return strings.Join(entriesStrings, ", ")
+		}(c.Entries),
+		c.Options,
+		c.Attributes,
+		func(children []*Collection) string {
+			childrenStrings := make([]string, len(children))
+			for i, entry := range children {
+				childrenStrings[i] = fmt.Sprintf("%s", entry)
+			}
+
+			return strings.Join(childrenStrings, ", ")
+		}(c.Children),
+		c.ParentID,
+	)
+}
+
 // IndexOfChild returns the index of a child in the children list of `-1' if not found.
 func (collection *Collection) IndexOfChild(id string) int {
 	for index, entry := range collection.Children {
@@ -40,6 +71,15 @@ type CollectionEntry struct {
 	ID         string                 `json:"id"`
 	Options    map[string]interface{} `json:"options,omitempty"`
 	Attributes map[string]interface{} `json:"options,omitempty"`
+}
+
+func (c *CollectionEntry) String() string {
+	return fmt.Sprintf(
+		"Collection{ID:%q Options:%v Attributes:%v}",
+		c.ID,
+		c.Options,
+		c.Attributes,
+	)
 }
 
 // PrepareCollection applies options defaults and fallback values, then filters entries by graphs titles and state.
