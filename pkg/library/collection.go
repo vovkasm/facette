@@ -75,7 +75,7 @@ type CollectionEntry struct {
 
 func (c *CollectionEntry) String() string {
 	return fmt.Sprintf(
-		"Collection{ID:%q Options:%v Attributes:%v}",
+		"CollectionEntry{ID:%q Options:%v Attributes:%v}",
 		c.ID,
 		c.Options,
 		c.Attributes,
