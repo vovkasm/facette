@@ -70,7 +70,7 @@ func (collection *Collection) IndexOfChild(id string) int {
 type CollectionEntry struct {
 	ID         string                 `json:"id"`
 	Options    map[string]interface{} `json:"options,omitempty"`
-	Attributes map[string]interface{} `json:"options,omitempty"`
+	Attributes map[string]interface{} `json:"attributes,omitempty"`
 }
 
 func (c *CollectionEntry) String() string {
