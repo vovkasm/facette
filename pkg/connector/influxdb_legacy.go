@@ -98,7 +98,7 @@ func (connector *InfluxDBLegacyConnector) GetName() string {
 func (connector *InfluxDBLegacyConnector) GetPlots(query *plot.Query) ([]*plot.Series, error) {
 	l := len(query.Series)
 	if l == 0 {
-		return nil, fmt.Errorf("influxdb[%s]: requested series list is empty", connector.name)
+		return nil, fmt.Errorf("influxdb-legacy[%s]: requested series list is empty", connector.name)
 	}
 
 	metrics := make([]string, l)
