@@ -187,15 +187,13 @@ func (b *Backend) Delete(v interface{}) error {
 func (b *Backend) List(v interface{}, filter string) error {
 	// Check for slice element type
 	sv := reflect.ValueOf(v)
-	if sv.Kind() == reflect.Interface && sv.Elem().Kind() != reflect.Slice {
+	if reflect.Indirect(sv).Kind() != reflect.Slice {
 		return ErrInvalidSlice
 	}
-	sv = reflect.Indirect(sv).Elem()
-
-	// Create new slice element instance
-	rn := reflect.New(sv.Type().Elem())
 
 	// Get table struct
+	rn := reflect.New(sv.Type().Elem().Elem())
+
 	rv, ts, err := b.parseValue(rn.Interface(), false)
 	if err != nil {
 		return err
@@ -232,7 +230,8 @@ func (b *Backend) List(v interface{}, filter string) error {
 		if err := b.mapValues(&r, ts, values); err != nil {
 			return err
 		}
-		reflect.Append(sv, reflect.Indirect(r))
+
+		sv.Elem().Set(reflect.Append(sv.Elem(), reflect.Indirect(r)))
 	}
 
 	return nil

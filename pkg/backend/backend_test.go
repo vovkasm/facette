@@ -81,30 +81,57 @@ func execTestGraph(driver, dsn string, t *testing.T) {
 	}
 	defer b.Close()
 
-	execTest(b, Graph{
-		Item: Item{
-			ID:          "00000000-0000-0000-0000-000000000000",
-			Name:        "graph1",
-			Description: "A great graph description",
-			Created:     date,
-			Modified:    date,
-		},
-		Series: []SeriesGroup{
-			SeriesGroup{
-				Series: []Series{
-					Series{
-						Name:   "series1",
-						Origin: "origin1",
-						Source: "source1",
-						Metric: "metric1",
+	execTest(b, []interface{}{
+		Graph{
+			Item: Item{
+				ID:          "00000000-0000-0000-0000-000000000000",
+				Name:        "graph1",
+				Description: "A great graph description",
+				Created:     date,
+				Modified:    date,
+			},
+			Series: []SeriesGroup{
+				SeriesGroup{
+					Series: []Series{
+						Series{
+							Name:   "series1",
+							Origin: "origin1",
+							Source: "source1",
+							Metric: "metric1",
+						},
 					},
 				},
 			},
+			Options: map[string]interface{}{
+				"title": "A great graph title",
+			},
+			Template: false,
 		},
-		Options: map[string]interface{}{
-			"title": "A great graph title",
+		Graph{
+			Item: Item{
+				ID:          "00000000-0000-0000-0000-000000000001",
+				Name:        "graph2",
+				Description: "Another great graph description",
+				Created:     date,
+				Modified:    date,
+			},
+			Series: []SeriesGroup{
+				SeriesGroup{
+					Series: []Series{
+						Series{
+							Name:   "series1",
+							Origin: "origin1",
+							Source: "source1",
+							Metric: "metric1",
+						},
+					},
+				},
+			},
+			Options: map[string]interface{}{
+				"title": "Another great graph title",
+			},
+			Template: false,
 		},
-		Template: false,
 	}, Graph{
 		Item: Item{
 			ID:          "00000000-0000-0000-0000-000000000000",
@@ -145,18 +172,35 @@ func execTestSourceGroup(driver, dsn string, t *testing.T) {
 	}
 	defer b.Close()
 
-	execTest(b, SourceGroup{
-		Item: Item{
-			ID:          "00000000-0000-0000-0000-000000000000",
-			Name:        "sourcegroup1",
-			Description: "A great sourcegroup description",
-			Created:     date,
-			Modified:    date,
+	execTest(b, []interface{}{
+		SourceGroup{
+			Item: Item{
+				ID:          "00000000-0000-0000-0000-000000000000",
+				Name:        "sourcegroup1",
+				Description: "A great sourcegroup description",
+				Created:     date,
+				Modified:    date,
+			},
+			Entries: []GroupEntry{
+				GroupEntry{
+					Pattern: "glob:host*.example.net",
+					Origin:  "origin1",
+				},
+			},
 		},
-		Entries: []GroupEntry{
-			GroupEntry{
-				Pattern: "glob:host*.example.net",
-				Origin:  "origin1",
+		SourceGroup{
+			Item: Item{
+				ID:          "00000000-0000-0000-0000-000000000001",
+				Name:        "sourcegroup2",
+				Description: "Another great sourcegroup description",
+				Created:     date,
+				Modified:    date,
+			},
+			Entries: []GroupEntry{
+				GroupEntry{
+					Pattern: "host3.example.net",
+					Origin:  "origin1",
+				},
 			},
 		},
 	}, SourceGroup{
@@ -183,18 +227,35 @@ func execTestMetricGroup(driver, dsn string, t *testing.T) {
 	}
 	defer b.Close()
 
-	execTest(b, MetricGroup{
-		Item: Item{
-			ID:          "00000000-0000-0000-0000-000000000000",
-			Name:        "metricgroup1",
-			Description: "A great metricgroup description",
-			Created:     date,
-			Modified:    date,
+	execTest(b, []interface{}{
+		MetricGroup{
+			Item: Item{
+				ID:          "00000000-0000-0000-0000-000000000000",
+				Name:        "metricgroup1",
+				Description: "A great metricgroup description",
+				Created:     date,
+				Modified:    date,
+			},
+			Entries: []GroupEntry{
+				GroupEntry{
+					Pattern: "glob:metric1.*",
+					Origin:  "origin1",
+				},
+			},
 		},
-		Entries: []GroupEntry{
-			GroupEntry{
-				Pattern: "glob:load.*",
-				Origin:  "origin1",
+		MetricGroup{
+			Item: Item{
+				ID:          "00000000-0000-0000-0000-000000000001",
+				Name:        "metricgroup2",
+				Description: "Another great metricgroup description",
+				Created:     date,
+				Modified:    date,
+			},
+			Entries: []GroupEntry{
+				GroupEntry{
+					Pattern: "metric2",
+					Origin:  "origin1",
+				},
 			},
 		},
 	}, MetricGroup{
@@ -207,7 +268,7 @@ func execTestMetricGroup(driver, dsn string, t *testing.T) {
 		},
 		Entries: []GroupEntry{
 			GroupEntry{
-				Pattern: "glob:load.*",
+				Pattern: "glob:metric1.*",
 				Origin:  "",
 			},
 		},
@@ -221,15 +282,27 @@ func execTestScale(driver, dsn string, t *testing.T) {
 	}
 	defer b.Close()
 
-	execTest(b, Scale{
-		Item: Item{
-			ID:          "00000000-0000-0000-0000-000000000000",
-			Name:        "scale1",
-			Description: "A great scale description",
-			Created:     date,
-			Modified:    date,
+	execTest(b, []interface{}{
+		Scale{
+			Item: Item{
+				ID:          "00000000-0000-0000-0000-000000000000",
+				Name:        "scale1",
+				Description: "A great scale description",
+				Created:     date,
+				Modified:    date,
+			},
+			Value: 0.123,
 		},
-		Value: 0.123,
+		Scale{
+			Item: Item{
+				ID:          "00000000-0000-0000-0000-000000000001",
+				Name:        "scale2",
+				Description: "Another great scale description",
+				Created:     date,
+				Modified:    date,
+			},
+			Value: 0.456,
+		},
 	}, Scale{
 		Item: Item{
 			ID:          "00000000-0000-0000-0000-000000000000",
@@ -238,7 +311,7 @@ func execTestScale(driver, dsn string, t *testing.T) {
 			Created:     date,
 			Modified:    date.Add(time.Hour),
 		},
-		Value: 0.456,
+		Value: 0.1234,
 	}, t)
 }
 
@@ -249,15 +322,27 @@ func execTestUnit(driver, dsn string, t *testing.T) {
 	}
 	defer b.Close()
 
-	execTest(b, Unit{
-		Item: Item{
-			ID:          "00000000-0000-0000-0000-000000000000",
-			Name:        "unit1",
-			Description: "A great unit description",
-			Created:     date,
-			Modified:    date,
+	execTest(b, []interface{}{
+		Unit{
+			Item: Item{
+				ID:          "00000000-0000-0000-0000-000000000000",
+				Name:        "unit1",
+				Description: "A great unit description",
+				Created:     date,
+				Modified:    date,
+			},
+			Label: "a",
 		},
-		Label: "ms",
+		Unit{
+			Item: Item{
+				ID:          "00000000-0000-0000-0000-000000000001",
+				Name:        "unit2",
+				Description: "Another great unit description",
+				Created:     date,
+				Modified:    date,
+			},
+			Label: "b",
+		},
 	}, Unit{
 		Item: Item{
 			ID:          "00000000-0000-0000-0000-000000000000",
@@ -266,46 +351,58 @@ func execTestUnit(driver, dsn string, t *testing.T) {
 			Created:     date,
 			Modified:    date.Add(time.Hour),
 		},
-		Label: "s",
+		Label: "c",
 	}, t)
 }
 
-func execTest(b *Backend, item, update interface{}, t *testing.T) {
-	var result interface{}
+func execTest(b *Backend, items []interface{}, update interface{}, t *testing.T) {
+	// Check items insertion
+	for _, item := range items {
+		rv := reflect.ValueOf(item)
 
-	// Check item insertion
-	if err := b.Insert(item); err != nil {
+		if err := b.Insert(item); err != nil {
+			t.Fatal(err)
+		}
+
+		result := reflect.New(reflect.TypeOf(item)).Interface()
+		if err := b.Get(rv.FieldByName("ID").String(), result); err != nil {
+			t.Fatal(err)
+		}
+
+		result = reflect.Indirect(reflect.ValueOf(result)).Interface()
+		if !deepEqual(item, result) {
+			t.Logf("\nExpected %#v\nbut got  %#v", item, result)
+			t.Fail()
+		}
+	}
+
+	// Check items list
+	sv := reflect.MakeSlice(reflect.SliceOf(reflect.TypeOf(items[0])), 0, 0)
+
+	s := reflect.New(sv.Type())
+	if err := b.List(s.Interface(), ""); err != nil {
 		t.Fatal(err)
 	}
 
-	result = reflect.New(reflect.TypeOf(item)).Interface()
-	if err := b.Get("00000000-0000-0000-0000-000000000000", result); err != nil {
-		t.Fatal(err)
-	}
-
-	result = reflect.Indirect(reflect.ValueOf(result)).Interface()
-	if !deepEqual(item, result) {
-		t.Logf("\nExpected %#v\nbut got  %#v", item, result)
+	if reflect.Indirect(s).Len() != len(items) {
+		t.Logf("\nExpected %d\nbut got  %d", len(items), reflect.Indirect(s).Len())
 		t.Fail()
 	}
 
-	// Insert second element
-	// TODO
-
-	// Check items list
-	v := reflect.MakeSlice(reflect.SliceOf(reflect.TypeOf(item)), 0, 0).Interface()
-	if err := b.List(&v, ""); err != nil {
-		t.Fatal(err)
+	for i, item := range items {
+		r := reflect.Indirect(s).Index(i).Interface()
+		if !deepEqual(item, r) {
+			t.Logf("\nExpected %#v\nbut got  %#v", item, r)
+			t.Fail()
+		}
 	}
-
-	// TODO
 
 	// Check item update
 	if err := b.Update(update); err != nil {
 		t.Fatal(err)
 	}
 
-	result = reflect.New(reflect.TypeOf(item)).Interface()
+	result := reflect.New(reflect.TypeOf(update)).Interface()
 	if err := b.Get("00000000-0000-0000-0000-000000000000", result); err != nil {
 		t.Fatal(err)
 	}
@@ -316,9 +413,22 @@ func execTest(b *Backend, item, update interface{}, t *testing.T) {
 		t.Fail()
 	}
 
-	// Check item deletion
-	if err := b.Delete(item); err != nil {
+	for _, item := range items {
+		// Check item deletion
+		if err := b.Delete(item); err != nil {
+			t.Fatal(err)
+		}
+	}
+
+	// Check for empty items list
+	s = reflect.New(sv.Type())
+	if err := b.List(s.Interface(), ""); err != nil {
 		t.Fatal(err)
+	}
+
+	if reflect.Indirect(s).Len() != 0 {
+		t.Logf("\nExpected %d\nbut got  %d", 0, reflect.Indirect(s).Len())
+		t.Fail()
 	}
 }
 

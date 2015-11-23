@@ -27,7 +27,7 @@ func (d mysqlDriver) sqlSchema() []string {
 			description TEXT,
 			created TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 			modified TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-			value NUMERIC NOT NULL,
+			value FLOAT NOT NULL,
 			CONSTRAINT ` + "`pk_scales`" + ` PRIMARY KEY (id),
 			CONSTRAINT ` + "`un_scales_name`" + `UNIQUE (name),
 			CONSTRAINT ` + "`un_scales_value`" + `UNIQUE (value)
