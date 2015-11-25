@@ -1,81 +1,135 @@
 package backend
 
 import (
+	"os"
 	"reflect"
 	"testing"
 	"time"
 )
 
 var (
-	date time.Time
+	date                          time.Time
+	mysqlCfg, pgsqlCfg, sqliteCfg map[string]interface{}
 )
 
 func init() {
 	date = time.Now().Round(time.Second)
+
+	mysqlCfg = map[string]interface{}{
+		"driver":   "mysql",
+		"dbname":   "facette",
+		"user":     "facette",
+		"password": "facette",
+	}
+
+	if v := os.Getenv("TEST_MYSQL_DBNAME"); v != "" {
+		mysqlCfg["dbname"] = v
+	}
+	if v := os.Getenv("TEST_MYSQL_ADDRESS"); v != "" {
+		mysqlCfg["address"] = v
+	}
+	if v := os.Getenv("TEST_MYSQL_USER"); v != "" {
+		mysqlCfg["user"] = v
+	}
+	if v := os.Getenv("TEST_MYSQL_PASSWORD"); v != "" {
+		mysqlCfg["password"] = v
+	}
+
+	pgsqlCfg = map[string]interface{}{
+		"driver":   "postgres",
+		"dbname":   "facette",
+		"user":     "facette",
+		"password": "facette",
+	}
+
+	if v := os.Getenv("TEST_PGSQL_DBNAME"); v != "" {
+		pgsqlCfg["dbname"] = v
+	}
+	if v := os.Getenv("TEST_PGSQL_HOST"); v != "" {
+		pgsqlCfg["host"] = v
+	}
+	if v := os.Getenv("TEST_PGSQL_PORT"); v != "" {
+		pgsqlCfg["port"] = v
+	}
+	if v := os.Getenv("TEST_PGSQL_USER"); v != "" {
+		pgsqlCfg["user"] = v
+	}
+	if v := os.Getenv("TEST_PGSQL_PASSWORD"); v != "" {
+		pgsqlCfg["password"] = v
+	}
+
+	sqliteCfg = map[string]interface{}{
+		"driver": "sqlite3",
+		"path":   ":memory:",
+	}
+
+	if v := os.Getenv("TEST_SQLITE_PATH"); v != "" {
+		sqliteCfg["path"] = v
+	}
 }
 
 func Test_Sqlite3_Graph(t *testing.T) {
-	execTestGraph("sqlite3", "/tmp/facette-backend.db", t)
+	execTestGraph(sqliteCfg, t)
 }
 
 func Test_Sqlite3_SourceGroup(t *testing.T) {
-	execTestSourceGroup("sqlite3", "/tmp/facette-backend.db", t)
+	execTestSourceGroup(sqliteCfg, t)
 }
 
 func Test_Sqlite3_MetricGroup(t *testing.T) {
-	execTestMetricGroup("sqlite3", "/tmp/facette-backend.db", t)
+	execTestMetricGroup(sqliteCfg, t)
 }
 
 func Test_Sqlite3_Scale(t *testing.T) {
-	execTestScale("sqlite3", "/tmp/facette-backend.db", t)
+	execTestScale(sqliteCfg, t)
 }
 
 func Test_Sqlite3_Unit(t *testing.T) {
-	execTestUnit("sqlite3", "/tmp/facette-backend.db", t)
+	execTestUnit(sqliteCfg, t)
 }
 
 func Test_Postgres_Graph(t *testing.T) {
-	execTestGraph("postgres", "dbname=facette user=facette password=facette", t)
+	execTestGraph(pgsqlCfg, t)
 }
 
 func Test_Postgres_SourceGroup(t *testing.T) {
-	execTestSourceGroup("postgres", "dbname=facette user=facette password=facette", t)
+	execTestSourceGroup(pgsqlCfg, t)
 }
 
 func Test_Postgres_MetricGroup(t *testing.T) {
-	execTestMetricGroup("postgres", "dbname=facette user=facette password=facette", t)
+	execTestMetricGroup(pgsqlCfg, t)
 }
 
 func Test_Postgres_Scale(t *testing.T) {
-	execTestScale("postgres", "dbname=facette user=facette password=facette", t)
+	execTestScale(pgsqlCfg, t)
 }
 
 func Test_Postgres_Unit(t *testing.T) {
-	execTestUnit("postgres", "dbname=facette user=facette password=facette", t)
+	execTestUnit(pgsqlCfg, t)
 }
 
 func Test_MySQL_Graph(t *testing.T) {
-	execTestGraph("mysql", "facette:facette@/facette?interpolateParams=true", t)
+	execTestGraph(mysqlCfg, t)
 }
 
 func Test_MySQL_SourceGroup(t *testing.T) {
-	execTestSourceGroup("mysql", "facette:facette@/facette?interpolateParams=true", t)
+	execTestSourceGroup(mysqlCfg, t)
 }
 
 func Test_MySQL_MetricGroup(t *testing.T) {
-	execTestMetricGroup("mysql", "facette:facette@/facette?interpolateParams=true", t)
+	execTestMetricGroup(mysqlCfg, t)
 }
 
 func Test_MySQL_Scale(t *testing.T) {
-	execTestScale("mysql", "facette:facette@/facette?interpolateParams=true", t)
+	execTestScale(mysqlCfg, t)
 }
 
 func Test_MySQL_Unit(t *testing.T) {
-	execTestUnit("mysql", "facette:facette@/facette?interpolateParams=true", t)
+	execTestUnit(mysqlCfg, t)
 }
 
-func execTestGraph(driver, dsn string, t *testing.T) {
-	b, err := NewBackend(driver, dsn)
+func execTestGraph(cfg map[string]interface{}, t *testing.T) {
+	b, err := NewBackend(cfg)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -165,8 +219,8 @@ func execTestGraph(driver, dsn string, t *testing.T) {
 	}, t)
 }
 
-func execTestSourceGroup(driver, dsn string, t *testing.T) {
-	b, err := NewBackend(driver, dsn)
+func execTestSourceGroup(cfg map[string]interface{}, t *testing.T) {
+	b, err := NewBackend(cfg)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -220,8 +274,8 @@ func execTestSourceGroup(driver, dsn string, t *testing.T) {
 	}, t)
 }
 
-func execTestMetricGroup(driver, dsn string, t *testing.T) {
-	b, err := NewBackend(driver, dsn)
+func execTestMetricGroup(cfg map[string]interface{}, t *testing.T) {
+	b, err := NewBackend(cfg)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -275,8 +329,8 @@ func execTestMetricGroup(driver, dsn string, t *testing.T) {
 	}, t)
 }
 
-func execTestScale(driver, dsn string, t *testing.T) {
-	b, err := NewBackend(driver, dsn)
+func execTestScale(cfg map[string]interface{}, t *testing.T) {
+	b, err := NewBackend(cfg)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -315,8 +369,8 @@ func execTestScale(driver, dsn string, t *testing.T) {
 	}, t)
 }
 
-func execTestUnit(driver, dsn string, t *testing.T) {
-	b, err := NewBackend(driver, dsn)
+func execTestUnit(cfg map[string]interface{}, t *testing.T) {
+	b, err := NewBackend(cfg)
 	if err != nil {
 		t.Fatal(err)
 	}

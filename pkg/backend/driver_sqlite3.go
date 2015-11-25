@@ -5,6 +5,7 @@ import (
 	"reflect"
 	"time"
 
+	"github.com/facette/facette/pkg/config"
 	_ "github.com/mattn/go-sqlite3"
 )
 
@@ -12,6 +13,10 @@ type sqlite3Driver struct{}
 
 func (d sqlite3Driver) getBindVar(i int) string {
 	return "?"
+}
+
+func (d sqlite3Driver) makeDSN(c map[string]interface{}) (string, error) {
+	return config.GetString(c, "path", true)
 }
 
 func (d sqlite3Driver) quoteName(s string) string {

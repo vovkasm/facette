@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"reflect"
 	"strconv"
+	"strings"
 
 	_ "github.com/lib/pq"
 )
@@ -12,6 +13,19 @@ type postgresDriver struct{}
 
 func (d postgresDriver) getBindVar(i int) string {
 	return fmt.Sprintf("$%d", i)
+}
+
+func (d postgresDriver) makeDSN(c map[string]interface{}) (string, error) {
+	parts := []string{}
+	for key, value := range c {
+		if key == "driver" {
+			continue
+		}
+
+		parts = append(parts, fmt.Sprintf("%s=%v", key, value))
+	}
+
+	return strings.Join(parts, " "), nil
 }
 
 func (d postgresDriver) quoteName(s string) string {

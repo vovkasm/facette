@@ -6,6 +6,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/facette/facette/pkg/config"
 	_ "github.com/go-sql-driver/mysql"
 )
 
@@ -13,6 +14,27 @@ type mysqlDriver struct{}
 
 func (d mysqlDriver) getBindVar(i int) string {
 	return "?"
+}
+
+func (d mysqlDriver) makeDSN(c map[string]interface{}) (string, error) {
+	database, err := config.GetString(c, "dbname", true)
+	if err != nil {
+		return "", err
+	}
+	address, err := config.GetString(c, "address", false)
+	if err != nil {
+		return "", err
+	}
+	user, err := config.GetString(c, "user", true)
+	if err != nil {
+		return "", err
+	}
+	password, err := config.GetString(c, "password", false)
+	if err != nil {
+		return "", err
+	}
+
+	return fmt.Sprintf("%s:%s@%s/%s?interpolateParams=true", user, password, address, database), nil
 }
 
 func (d mysqlDriver) quoteName(s string) string {

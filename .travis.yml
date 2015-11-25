@@ -6,25 +6,34 @@ go:
   - 1.3
   - 1.2
 
+sudo: false
+
+env:
+  - TEST_MYSQL_HOST='localhost'
+  - TEST_MYSQL_USER='root'
+  - TEST_MYSQL_PASSWORD=''
+  - TEST_PGSQL_HOST='localhost'
+  - TEST_PGSQL_USER='postgres'
+  - TEST_PGSQL_PASSWORD=''
+
 services:
   - mysql
   - postgresql
 
-before_install:
-  - sudo apt-get update
-  - sudo apt-get install -qq librrd-dev
-
-before_script:
-  - mysql -e 'create database facette;'
-  - mysql -e "grant all privileges on facette.* to 'facette'@'%' identified by 'facette';"
-  - psql -c "create user facette with password 'facette';" -U postgres
-  - psql -c 'create database facette owner facette;' -U postgres
-
-script:
-  - make test
+addons:
+  apt:
+    packages:
+      - librrd-dev
 
 notifications:
   email:
     - dev@facette.io
+
+before_script:
+  - mysql -e 'create database facette;'
+  - psql -c 'create database facette;' -U postgres
+
+script:
+  - make test
 
 # vim: ts=2 sw=2 et

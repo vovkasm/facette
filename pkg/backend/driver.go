@@ -7,6 +7,7 @@ import (
 
 type driver interface {
 	getBindVar(int) string
+	makeDSN(map[string]interface{}) (string, error)
 	quoteName(string) string
 	sqlSchema() []string
 	transformValue(reflect.Value, reflect.Value) (reflect.Value, error)

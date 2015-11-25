@@ -7,9 +7,12 @@ import (
 	"reflect"
 	"regexp"
 	"strings"
+
+	"github.com/facette/facette/pkg/config"
 )
 
 type Backend struct {
+	config   map[string]interface{}
 	driver   driver
 	db       *sql.DB
 	tx       *sql.Tx
@@ -360,13 +363,36 @@ func (b *Backend) queryRow(query string, values ...interface{}) *sql.Row {
 	return b.db.QueryRow(query, values...)
 }
 
-func NewBackend(driver, dsn string) (*Backend, error) {
+func NewBackend(c map[string]interface{}) (*Backend, error) {
+	var d driver
+
+	driver, err := config.GetString(c, "driver", true)
+	if err != nil {
+		return nil, err
+	}
+
 	// Check if database driver is supported
 	if !driverSupported(driver) {
 		return nil, fmt.Errorf("unsupported database driver `%s'", driver)
 	}
 
+	switch driver {
+	case "mysql":
+		d = mysqlDriver{}
+	case "postgres":
+		d = postgresDriver{}
+	case "sqlite3":
+		d = sqlite3Driver{}
+	default:
+		return nil, fmt.Errorf("unsupported database backend `%s'", driver)
+	}
+
 	// Open database connection
+	dsn, err := d.makeDSN(c)
+	if err != nil {
+		return nil, err
+	}
+
 	db, err := sql.Open(driver, dsn)
 	if err != nil {
 		return nil, err
@@ -374,24 +400,15 @@ func NewBackend(driver, dsn string) (*Backend, error) {
 
 	// Create new backend
 	b := &Backend{
+		config:   c,
+		driver:   d,
 		db:       db,
 		tables:   make(map[reflect.Type]*tableStruct),
 		idRegexp: regexp.MustCompile("^\\d{8}-(?:\\d{4}-){3}\\d{12}$"),
 	}
 
-	switch driver {
-	case "mysql":
-		b.driver = mysqlDriver{}
-	case "postgres":
-		b.driver = postgresDriver{}
-	case "sqlite3":
-		b.driver = sqlite3Driver{}
-	default:
-		return nil, fmt.Errorf("unsupported database backend `%s'", driver)
-	}
-
 	// Initialize database schema
-	for _, q := range b.driver.sqlSchema() {
+	for _, q := range d.sqlSchema() {
 		if _, err := b.db.Exec(q); err != nil {
 			return nil, err
 		}
