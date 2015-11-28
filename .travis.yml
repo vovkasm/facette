@@ -6,7 +6,8 @@ go:
   - 1.3
   - 1.2
 
-sudo: false
+sudo: required
+dist: trusty
 
 env:
   - TEST_MYSQL_HOST='localhost' TEST_MYSQL_USER='root' TEST_MYSQL_PASSWORD='' TEST_PGSQL_HOST='localhost' TEST_PGSQL_USER='postgres' TEST_PGSQL_PASSWORD=''
@@ -25,8 +26,10 @@ notifications:
     - dev@facette.io
 
 before_script:
-  - mysql -e 'create database facette;'
-  - psql -c 'create database facette;' -U postgres
+  - sudo apt-get update -qq
+  - sudo apt-get install -qq mysql-server-5.6 mysql-client-5.6 mysql-client-core-5.6
+  - mysql -u root -e 'create database facette;'
+  - psql -U postgres -c 'create database facette;'
 
 script:
   - make test
