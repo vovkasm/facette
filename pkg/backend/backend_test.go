@@ -16,10 +16,9 @@ func init() {
 	date = time.Now().Round(time.Second)
 
 	mysqlCfg = map[string]interface{}{
-		"driver":   "mysql",
-		"dbname":   "facette",
-		"user":     "facette",
-		"password": "facette",
+		"driver": "mysql",
+		"dbname": "facette",
+		"user":   "facette",
 	}
 
 	if v := os.Getenv("TEST_MYSQL_DBNAME"); v != "" {
@@ -36,10 +35,10 @@ func init() {
 	}
 
 	pgsqlCfg = map[string]interface{}{
-		"driver":   "postgres",
-		"dbname":   "facette",
-		"user":     "facette",
-		"password": "facette",
+		"driver":  "postgres",
+		"dbname":  "facette",
+		"user":    "facette",
+		"sslmode": "disable",
 	}
 
 	if v := os.Getenv("TEST_PGSQL_DBNAME"); v != "" {
