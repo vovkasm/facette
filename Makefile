@@ -289,7 +289,7 @@ $(SCRIPT_EXTRA_OUTPUT): $(SCRIPT_EXTRA)
 $(MESG_OUTPUT): $(MESG_SRC)
 	@$(call mesg_start,static,Packing $(MESG_SRC) file...)
 	@install -d -m 0755 $(BUILD_DIR)/static && \
-		$(SED) -e 's/^\s\+//g;s/\s\+$$//g' $(MESG_SRC) | $(SED) -e ':a;N;s/\n//;ta' >$(MESG_OUTPUT) && \
+		$(SED) -e 's/^\s\+//g;s/\s\+$$//g' $(MESG_SRC) | $(SED) -e ':a' -e'N;s/\n//;ta' >$(MESG_OUTPUT) && \
 		$(call mesg_ok) || $(call mesg_fail)
 
 $(STYLE_OUTPUT): lessc $(STYLE_SRC)
@@ -314,10 +314,10 @@ $(STYLE_EXTRA_OUTPUT): $(STYLE_EXTRA)
 		$(call mesg_ok) || $(call mesg_fail)
 
 $(TMPL_OUTPUT): $(TMPL_SRC)
-ifneq ($(UNAME), Linux)
-	$(eval COPY_CMD=pax -rwpe)
-else
+ifeq ($(UNAME), Linux)
 	$(eval COPY_CMD=cp -r --parents)
+else
+	$(eval COPY_CMD=pax -rwpe)
 endif
 	@$(call mesg_start,build,Copying template files...)
 	@install -d -m 0755 $(BUILD_DIR)/template && \
